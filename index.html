@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SmartCorrect - IA de Correction Automatique</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.0/dist/tesseract.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.7.0/math.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-brain"></i> SmartCorrect</h1>
+            <p class="subtitle">IA de correction automatique - Scan, Voix, Analyse intelligente</p>
+            <div class="ai-status">
+                <span class="status-dot active"></span>
+                <span>IA Active - Prêt à analyser</span>
+            </div>
+        </header>
+
+        <main>
+            <!-- Section Scanner + Voix -->
+            <div class="card">
+                <h2><i class="fas fa-robot"></i> Entrée intelligente</h2>
+                
+                <!-- Scanner avec IA -->
+                <div class="input-method scanner-method">
+                    <div class="method-header">
+                        <i class="fas fa-camera"></i>
+                        <h3>Scanner intelligent</h3>
+                        <span class="badge ai-badge">IA Active</span>
+                    </div>
+                    <div class="camera-container">
+                        <div id="cameraView" class="camera-view">
+                            <video id="cameraPreview" autoplay playsinline></video>
+                            <div id="cameraPlaceholder" class="camera-placeholder">
+                                <i class="fas fa-camera"></i>
+                                <p>Pointez vers votre document</p>
+                                <small>L'IA détectera automatiquement le type</small>
+                            </div>
+                        </div>
+                        <div class="ai-detection-overlay">
+                            <div class="detection-box" id="detectionBox">
+                                <div class="detection-label">Zone de détection IA</div>
+                                <div class="detection-info">
+                                    <span id="detectionType">Analyse en cours...</span>
+                                    <span id="detectionConfidence">Confiance: --%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="camera-controls">
+                        <button id="startCameraBtn" class="btn btn-primary">
+                            <i class="fas fa-video"></i> Activer Caméra IA
+                        </button>
+                        <button id="captureBtn" class="btn btn-success" disabled>
+                            <i class="fas fa-brain"></i> Analyser avec IA
+                        </button>
+                        <button id="autoScanBtn" class="btn btn-warning" disabled>
+                            <i class="fas fa-robot"></i> Mode Auto-Scan
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Reconnaissance vocale -->
+                <div class="input-method voice-method">
+                    <div class="method-header">
+                        <i class="fas fa-microphone"></i>
+                        <h3>Reconnaissance vocale</h3>
+                        <span class="badge voice-badge">Parlez maintenant</span>
+                    </div>
+                    <div class="voice-container">
+                        <div class="voice-visualizer">
+                            <div class="visualizer-bars" id="visualizer"></div>
+                            <div class="voice-status" id="voiceStatus">
+                                <i class="fas fa-microphone-slash"></i>
+                                <span>Appuyez pour parler</span>
+                            </div>
+                        </div>
+                        <div class="voice-controls">
+                            <button id="startVoiceBtn" class="btn btn-voice">
+                                <i class="fas fa-microphone"></i>
+                                <span>Parler ma question</span>
+                            </button>
+                            <button id="stopVoiceBtn" class="btn btn-secondary" disabled>
+                                <i class="fas fa-stop"></i> Arrêter
+                            </button>
+                        </div>
+                        <div class="voice-preview">
+                            <textarea id="voiceResult" placeholder="Votre question vocale apparaîtra ici..." readonly></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Saisie manuelle -->
+                <div class="input-method manual-method">
+                    <div class="method-header">
+                        <i class="fas fa-keyboard"></i>
+                        <h3>Saisie rapide</h3>
+                    </div>
+                    <textarea id="manualInput" placeholder="Ou tapez votre question ici (ex: 'Calculer 2+3*5' ou 'Corriger cet algorithme')..."></textarea>
+                    <button id="analyzeManualBtn" class="btn btn-primary">
+                        <i class="fas fa-play"></i> Analyser avec IA
+                    </button>
+                </div>
+            </div>
+
+            <!-- Détection automatique IA -->
+            <div class="card detection-card">
+                <h2><i class="fas fa-search"></i> Détection intelligente</h2>
+                <div class="ai-detection-grid">
+                    <div class="detection-item active" data-type="all">
+                        <i class="fas fa-robot"></i>
+                        <span>Détection Auto</span>
+                        <small>L'IA choisit</small>
+                    </div>
+                    <div class="detection-item" data-type="qcm">
+                        <i class="fas fa-check-square"></i>
+                        <span>QCM</span>
+                        <small>Questions/Réponses</small>
+                    </div>
+                    <div class="detection-item" data-type="algorithm">
+                        <i class="fas fa-code"></i>
+                        <span>Algorithmes</span>
+                        <small>Code, Logique</small>
+                    </div>
+                    <div class="detection-item" data-type="webdev">
+                        <i class="fas fa-globe"></i>
+                        <span>Développement Web</span>
+                        <small>HTML/CSS/JS</small>
+                    </div>
+                    <div class="detection-item" data-type="mobile">
+                        <i class="fas fa-mobile-alt"></i>
+                        <span>Mobile</span>
+                        <small>React Native, Flutter</small>
+                    </div>
+                    <div class="detection-item" data-type="math">
+                        <i class="fas fa-calculator"></i>
+                        <span>Maths</span>
+                        <small>Calculs, Probas</small>
+                    </div>
+                </div>
+                
+                <div class="detection-results">
+                    <div class="detected-type">
+                        <h4><i class="fas fa-bullseye"></i> Type détecté :</h4>
+                        <div class="type-badge" id="detectedTypeBadge">
+                            <span>En attente d'analyse...</span>
+                            <i class="fas fa-question"></i>
+                        </div>
+                    </div>
+                    <div class="detection-confidence">
+                        <h4><i class="fas fa-chart-line"></i> Confiance IA :</h4>
+                        <div class="confidence-meter">
+                            <div class="meter-bar">
+                                <div class="meter-fill" id="confidenceFill" style="width: 0%"></div>
+                            </div>
+                            <span id="confidenceText">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Résultats IA -->
+            <div class="card results-card">
+                <h2><i class="fas fa-lightbulb"></i> Résultats & Correction</h2>
+                
+                <!-- Correction instantanée -->
+                <div class="instant-correction">
+                    <div class="correction-header">
+                        <h3><i class="fas fa-bolt"></i> Correction instantanée</h3>
+                        <div class="correction-time" id="correctionTime">
+                            <i class="fas fa-clock"></i> <span>-- ms</span>
+                        </div>
+                    </div>
+                    
+                    <div class="correction-content">
+                        <div class="question-display">
+                            <h4><i class="fas fa-question-circle"></i> Question analysée :</h4>
+                            <div id="analyzedQuestion" class="analyzed-question">
+                                Aucune question analysée
+                            </div>
+                        </div>
+                        
+                        <div class="solution-display">
+                            <h4><i class="fas fa-check-circle"></i> Solution IA :</h4>
+                            <div id="aiSolution" class="ai-solution">
+                                <div class="empty-solution">
+                                    <i class="fas fa-robot"></i>
+                                    <p>La solution IA apparaîtra ici</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Détails IA -->
+                <div class="ai-details">
+                    <h4><i class="fas fa-microscope"></i> Analyse détaillée</h4>
+                    <div class="details-tabs">
+                        <button class="detail-tab active" data-tab="steps">Étapes</button>
+                        <button class="detail-tab" data-tab="explanation">Explication</button>
+                        <button class="detail-tab" data-tab="alternative">Alternatives</button>
+                        <button class="detail-tab" data-tab="validation">Validation</button>
+                    </div>
+                    
+                    <div class="details-content">
+                        <div id="stepsContent" class="detail-pane active">
+                            <div class="step-list" id="stepList">
+                                <div class="empty-detail">
+                                    <i class="fas fa-list-ol"></i>
+                                    <p>Les étapes de résolution apparaîtront ici</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="explanationContent" class="detail-pane">
+                            <div id="explanationText" class="explanation-text">
+                                <div class="empty-detail">
+                                    <i class="fas fa-comment-alt"></i>
+                                    <p>L'explication détaillée apparaîtra ici</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="alternativeContent" class="detail-pane">
+                            <div id="alternativesList" class="alternatives-list">
+                                <div class="empty-detail">
+                                    <i class="fas fa-exchange-alt"></i>
+                                    <p>Les méthodes alternatives apparaîtront ici</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="validationContent" class="detail-pane">
+                            <div id="validationResults" class="validation-results">
+                                <div class="empty-detail">
+                                    <i class="fas fa-check-double"></i>
+                                    <p>La validation automatique apparaîtra ici</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Base de connaissances IA -->
+            <div class="card knowledge-card">
+                <h2><i class="fas fa-database"></i> Base de connaissances IA</h2>
+                
+                <div class="knowledge-sections">
+                    <div class="knowledge-section">
+                        <h4><i class="fas fa-code"></i> Algorithmes & Structures</h4>
+                        <div class="knowledge-items">
+                            <div class="knowledge-item">
+                                <span>Complexités</span>
+                                <div class="item-tags">
+                                    <span class="tag">O(1)</span>
+                                    <span class="tag">O(n)</span>
+                                    <span class="tag">O(log n)</span>
+                                </div>
+                            </div>
+                            <div class="knowledge-item">
+                                <span>Algorithmes de tri</span>
+                                <div class="item-tags">
+                                    <span class="tag">QuickSort</span>
+                                    <span class="tag">MergeSort</span>
+                                    <span class="tag">BubbleSort</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="knowledge-section">
+                        <h4><i class="fas fa-globe"></i> Développement Web</h4>
+                        <div class="knowledge-items">
+                            <div class="knowledge-item">
+                                <span>HTML5</span>
+                                <div class="item-tags">
+                                    <span class="tag">Semantic</span>
+                                    <span class="tag">Accessibility</span>
+                                </div>
+                            </div>
+                            <div class="knowledge-item">
+                                <span>CSS3</span>
+                                <div class="item-tags">
+                                    <span class="tag">Flexbox</span>
+                                    <span class="tag">Grid</span>
+                                    <span class="tag">Responsive</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="knowledge-section">
+                        <h4><i class="fas fa-mobile-alt"></i> Développement Mobile</h4>
+                        <div class="knowledge-items">
+                            <div class="knowledge-item">
+                                <span>React Native</span>
+                                <div class="item-tags">
+                                    <span class="tag">Components</span>
+                                    <span class="tag">State</span>
+                                </div>
+                            </div>
+                            <div class="knowledge-item">
+                                <span>Flutter</span>
+                                <div class="item-tags">
+                                    <span class="tag">Widgets</span>
+                                    <span class="tag">Dart</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="knowledge-section">
+                        <h4><i class="fas fa-calculator"></i> Maths & Probabilités</h4>
+                        <div class="knowledge-items">
+                            <div class="knowledge-item">
+                                <span>Calculs</span>
+                                <div class="item-tags">
+                                    <span class="tag">Algèbre</span>
+                                    <span class="tag">Analyse</span>
+                                </div>
+                            </div>
+                            <div class="knowledge-item">
+                                <span>Probabilités</span>
+                                <div class="item-tags">
+                                    <span class="tag">Distributions</span>
+                                    <span class="tag">Bayes</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="knowledge-stats">
+                    <div class="stat">
+                        <i class="fas fa-brain"></i>
+                        <span>Modèles IA: <strong>4</strong></span>
+                    </div>
+                    <div class="stat">
+                        <i class="fas fa-book"></i>
+                        <span>Connaissances: <strong>200+</strong></span>
+                    </div>
+                    <div class="stat">
+                        <i class="fas fa-bolt"></i>
+                        <span>Temps réponse: <strong>&lt;1s</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Historique IA -->
+            <div class="card history-card">
+                <h2><i class="fas fa-history"></i> Historique intelligent</h2>
+                
+                <div class="history-filters">
+                    <button class="filter-btn active" data-filter="all">Tout</button>
+                    <button class="filter-btn" data-filter="qcm">QCM</button>
+                    <button class="filter-btn" data-filter="algorithm">Algorithmes</button>
+                    <button class="filter-btn" data-filter="webdev">Web</button>
+                    <button class="filter-btn" data-filter="math">Maths</button>
+                </div>
+                
+                <div class="history-list" id="historyList">
+                    <div class="empty-history">
+                        <i class="fas fa-history"></i>
+                        <p>Votre historique d'analyses apparaîtra ici</p>
+                    </div>
+                </div>
+                
+                <div class="history-actions">
+                    <button id="clearHistoryBtn" class="btn btn-secondary">
+                        <i class="fas fa-trash"></i> Effacer historique
+                    </button>
+                    <button id="exportHistoryBtn" class="btn btn-secondary">
+                        <i class="fas fa-download"></i> Exporter
+                    </button>
+                    <button id="aiInsightsBtn" class="btn btn-primary">
+                        <i class="fas fa-chart-bar"></i> Insights IA
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4><i class="fas fa-shield-alt"></i> 100% Local & Privé</h4>
+                    <p>Toutes les analyses sont effectuées localement sur votre appareil.</p>
+                </div>
+                <div class="footer-section">
+                    <h4><i class="fas fa-bolt"></i> Temps réel</h4>
+                    <p>Analyse et correction en moins d'une seconde.</p>
+                </div>
+                <div class="footer-section">
+                    <h4><i class="fas fa-robot"></i> IA Intelligente</h4>
+                    <p>Détection automatique du type de document.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Overlays -->
+    <div id="scanOverlay" class="scan-overlay">
+        <div class="scan-animation">
+            <div class="scan-line"></div>
+        </div>
+        <div class="scan-text">
+            <h3><i class="fas fa-brain"></i> Analyse IA en cours</h3>
+            <p id="scanStatus">Détection du type de document...</p>
+            <div class="scan-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <span id="progressText">0%</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="voiceOverlay" class="voice-overlay">
+        <div class="voice-animation">
+            <div class="voice-circle"></div>
+            <div class="voice-waves"></div>
+        </div>
+        <h3><i class="fas fa-microphone"></i> Écoute en cours...</h3>
+        <p>Parlez votre question clairement</p>
+        <div class="voice-level" id="voiceLevel">
+            <div class="level-bars"></div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
